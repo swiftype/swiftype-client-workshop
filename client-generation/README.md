@@ -28,12 +28,12 @@ Client generation is customized in 3 ways:
 
 - Using `.swagger-codegen-ignore` to opt out of auto generating certain files
 
-Note: For the following language commands, point the `-o` option to the
-correct repository, rather than the local location it points to now. It is
-configured this way for now for demo purposes only.
-
 ### Ruby
 
 ```
 swagger-codegen generate -i ../api-spec.json -l ruby -o ruby/swiftype-app-search-ruby -t ruby/templates -c ruby/config.json
 ```
+
+Output can be found [here](ruby/swiftype-app-search-ruby)
+
+Note: For now, the `-o` points to this local location. In the future, we would point this to the ruby client repository.
