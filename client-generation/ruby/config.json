@@ -1,0 +1,11 @@
+{
+  "gemAuthor": "Swiftype",
+  "gemAuthorEmail": "support@swiftype.com",
+  "gemName": "swiftype-app-search",
+  "moduleName": "SwiftypeAppSearch",
+  "gemVersion": "1.1.0",
+  "gemLicense": "MIT",
+  "gemDescription":
+    "API client for accessing the Swiftype App Search API with no dependencies",
+  "gemSummary": "Official gem for accessing the Swiftype App Search API"
+}
