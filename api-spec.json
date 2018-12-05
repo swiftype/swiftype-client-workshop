@@ -2,77 +2,242 @@
   "swagger": "2.0",
   "info": {
     "description": "Swiftype App Search API",
-    "version": "0.1",
+    "version": "1.0",
     "title": "Swiftype App Search API"
   },
   "host": "host-n16af4.api.swiftype.com",
   "basePath": "/api/as/v1",
   "tags": [
     {
-      "name": "synonyms",
+      "name": "Synonyms API",
       "description": "Synonym management"
+    },
+    {
+      "name": "Engines API",
+      "description": "Engine management"
     }
   ],
   "schemes": ["https"],
   "consumes": ["application/json"],
   "produces": ["application/json"],
+  "securityDefinitions": {
+    "ApiKeyAuth": {
+      "type": "apiKey",
+      "name": "Authorization",
+      "in": "header"
+    }
+  },
   "security": [
     {
       "ApiKeyAuth": []
     }
   ],
   "paths": {
-    "/engines/{engine_name}/synonyms": {
+    "/engines": {
       "get": {
-        "tags": ["synonyms"],
-        "summary": "Get all Synonym Sets for an Engine",
-        "operationId": "getSynonyms",
+        "tags": ["Engines API"],
+        "summary": "List all Engines",
+        "operationId": "listEngines",
         "parameters": [
           {
-            "name": "engine_name",
-            "in": "path",
-            "description": "Name of engine",
-            "required": true,
-            "type": "string",
-            "x-example": "rent-a-car"
+            "$ref": "#/parameters/pageSizeParam"
           },
           {
-            "in": "body",
-            "name": "body",
-            "required": false,
-            "schema": {
-              "$ref": "#/definitions/Page"
-            }
+            "$ref": "#/parameters/pageCurrent"
           }
         ],
         "responses": {
+          "401": {
+            "$ref": "#/responses/UnauthorizedResponse"
+          },
           "200": {
             "description": "OK",
             "schema": {
-              "$ref": "#/definitions/inline_response_200"
+              "properties": {
+                "meta": {
+                  "$ref": "#/definitions/Meta"
+                },
+                "results": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/Engine"
+                  }
+                }
+              },
+              "example": {
+                "meta": {
+                  "page": {
+                    "current": 1,
+                    "size": 10,
+                    "total_pages": 10,
+                    "total_results": 100
+                  }
+                },
+                "results": [
+                  {
+                    "name": "rent-a-car",
+                    "type": "default",
+                    "language": "en"
+                  },
+                  {
+                    "name": "national-parks",
+                    "type": "default",
+                    "language": null
+                  }
+                ]
+              }
             }
           },
           "default": {
-            "description": "Unexpected Error",
-            "schema": {
-              "$ref": "#/definitions/Errors"
-            }
+            "$ref": "#/responses/Unexpected"
           }
         }
       },
       "post": {
-        "tags": ["synonyms"],
+        "tags": ["Engines API"],
+        "summary": "Create an Engine",
+        "operationId": "createEngine",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Engine"
+            }
+          }
+        ],
+        "responses": {
+          "401": {
+            "$ref": "#/responses/UnauthorizedResponse"
+          },
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/Engine"
+            }
+          },
+          "default": {
+            "$ref": "#/responses/Unexpected"
+          }
+        }
+      }
+    },
+    "/engines/{engine_name}": {
+      "get": {
+        "tags": ["Engines API"],
+        "summary": "Get an Engine",
+        "operationId": "getEngine",
+        "parameters": [
+          {
+            "$ref": "#/parameters/engineNameParam"
+          }
+        ],
+        "responses": {
+          "401": {
+            "$ref": "#/responses/UnauthorizedResponse"
+          },
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/Engine"
+            }
+          },
+          "default": {
+            "$ref": "#/responses/Unexpected"
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Engines API"],
+        "summary": "Destroy an single Engine",
+        "operationId": "destroyEngine",
+        "parameters": [
+          {
+            "$ref": "#/parameters/engineNameParam"
+          }
+        ],
+        "responses": {
+          "401": {
+            "$ref": "#/responses/UnauthorizedResponse"
+          },
+          "200": {
+            "description": "OK"
+          },
+          "default": {
+            "$ref": "#/responses/Unexpected"
+          }
+        }
+      }
+    },
+    "/engines/{engine_name}/synonyms": {
+      "parameters": [
+        {
+          "$ref": "#/parameters/engineNameParam"
+        }
+      ],
+      "get": {
+        "tags": ["Synonyms API"],
+        "summary": "List all Synonym Sets",
+        "operationId": "listSynonyms",
+        "parameters": [
+          {
+            "$ref": "#/parameters/pageSizeParam"
+          },
+          {
+            "$ref": "#/parameters/pageCurrent"
+          }
+        ],
+        "responses": {
+          "401": {
+            "$ref": "#/responses/UnauthorizedResponse"
+          },
+          "200": {
+            "description": "OK",
+            "schema": {
+              "properties": {
+                "meta": {
+                  "$ref": "#/definitions/Meta"
+                },
+                "results": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/SynonymSet"
+                  }
+                }
+              },
+              "example": {
+                "meta": {
+                  "page": {
+                    "current": 1,
+                    "size": 10,
+                    "total_pages": 10,
+                    "total_results": 100
+                  }
+                },
+                "results": [
+                  {
+                    "synonyms": ["cool car", "PT Cruiser"],
+                    "id": "syn-5b31513b14cc8a6f243e1f5c"
+                  },
+                  {
+                    "synonyms": ["cool car", "PT Cruiser"],
+                    "id": "syn-5b31513b14cc8a6f243e1f5c"
+                  }
+                ]
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/responses/Unexpected"
+          }
+        }
+      },
+      "post": {
+        "tags": ["Synonyms API"],
         "summary": "Create a Synonym Set",
         "operationId": "createSynonym",
         "parameters": [
-          {
-            "name": "engine_name",
-            "in": "path",
-            "description": "Name of engine",
-            "required": true,
-            "type": "string",
-            "x-example": "rent-a-car"
-          },
           {
             "in": "body",
             "name": "body",
@@ -83,6 +248,9 @@
           }
         ],
         "responses": {
+          "401": {
+            "$ref": "#/responses/UnauthorizedResponse"
+          },
           "200": {
             "description": "OK",
             "schema": {
@@ -90,17 +258,14 @@
             }
           },
           "default": {
-            "description": "Unexpected Error",
-            "schema": {
-              "$ref": "#/definitions/Errors"
-            }
+            "$ref": "#/responses/Unexpected"
           }
         }
       }
     },
     "/engines/{engine_name}/synonyms/{id}": {
       "get": {
-        "tags": ["synonyms"],
+        "tags": ["Synonyms API"],
         "summary": "Get a single Synonym Set",
         "operationId": "getSynonym",
         "parameters": [
@@ -113,15 +278,13 @@
             "x-example": "syn-5b31513b14cc8a6f243e1f5c"
           },
           {
-            "name": "engine_name",
-            "in": "path",
-            "description": "Name of engine",
-            "required": true,
-            "type": "string",
-            "x-example": "rent-a-car"
+            "$ref": "#/parameters/engineNameParam"
           }
         ],
         "responses": {
+          "401": {
+            "$ref": "#/responses/UnauthorizedResponse"
+          },
           "200": {
             "description": "OK",
             "schema": {
@@ -129,15 +292,12 @@
             }
           },
           "default": {
-            "description": "Unexpected Error",
-            "schema": {
-              "$ref": "#/definitions/Errors"
-            }
+            "$ref": "#/responses/Unexpected"
           }
         }
       },
       "delete": {
-        "tags": ["synonyms"],
+        "tags": ["Synonyms API"],
         "summary": "Destroy a Synonym Set",
         "operationId": "destroySynonym",
         "parameters": [
@@ -150,36 +310,21 @@
             "x-example": "syn-5b31513b14cc8a6f243e1f5c"
           },
           {
-            "name": "engine_name",
-            "in": "path",
-            "description": "Name of engine",
-            "required": true,
-            "type": "string",
-            "x-example": "rent-a-car"
+            "$ref": "#/parameters/engineNameParam"
           }
         ],
         "responses": {
+          "401": {
+            "$ref": "#/responses/UnauthorizedResponse"
+          },
           "200": {
-            "description": "OK",
-            "schema": {
-              "$ref": "#/definitions/DeletedStatus"
-            }
+            "$ref": "#/responses/DeletedOK"
           },
           "default": {
-            "description": "Unexpected Error",
-            "schema": {
-              "$ref": "#/definitions/Errors"
-            }
+            "$ref": "#/responses/Unexpected"
           }
         }
       }
-    }
-  },
-  "securityDefinitions": {
-    "ApiKeyAuth": {
-      "type": "apiKey",
-      "name": "Authorization",
-      "in": "header"
     }
   },
   "definitions": {
@@ -253,7 +398,7 @@
         "id": "syn-5b31513b14cc8a6f243e1f5c"
       }
     },
-    "DeletedStatus": {
+    "Deleted": {
       "properties": {
         "deleted": {
           "type": "boolean"
@@ -261,6 +406,16 @@
       },
       "example": {
         "deleted": true
+      }
+    },
+    "Error": {
+      "properties": {
+        "error": {
+          "type": "string"
+        }
+      },
+      "example": {
+        "error": "There was an error"
       }
     },
     "Errors": {
@@ -271,45 +426,97 @@
             "type": "string"
           }
         }
+      },
+      "example": {
+        "errors": ["There were errors", "and more errors"]
       }
     },
-    "inline_response_200": {
+    "Engine": {
+      "required": ["name"],
       "properties": {
-        "meta": {
-          "$ref": "#/definitions/Meta"
+        "name": {
+          "type": "string"
         },
-        "results": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/SynonymSet"
-          }
+        "type": {
+          "type": "string"
+        },
+        "language": {
+          "type": "string"
         }
       },
       "example": {
-        "meta": {
-          "page": {
-            "current": 1,
-            "size": 10,
-            "total_pages": 10,
-            "total_results": 100
-          }
-        },
-        "results": [
-          {
-            "synonyms": ["cool car", "PT Cruiser"],
-            "id": "syn-5b31513b14cc8a6f243e1f5c"
-          },
-          {
-            "synonyms": ["cool car", "PT Cruiser"],
-            "id": "syn-5b31513b14cc8a6f243e1f5c"
-          }
-        ]
+        "name": "test-engine",
+        "type": "default",
+        "language": null
       }
+    }
+  },
+  "parameters": {
+    "pageCurrent": {
+      "name": "page[current]",
+      "in": "query",
+      "type": "integer",
+      "format": "int32",
+      "required": false,
+      "x-example": "1",
+      "default": "1"
+    },
+    "pageSizeParam": {
+      "name": "page[size]",
+      "in": "query",
+      "type": "integer",
+      "format": "int32",
+      "required": false,
+      "x-example": "20",
+      "default": "20"
+    },
+    "engineNameParam": {
+      "name": "engine_name",
+      "in": "path",
+      "description": "Name of engine",
+      "required": true,
+      "type": "string",
+      "x-example": "rent-a-car"
     }
   },
   "responses": {
     "ErrorsResponse": {
-      "description": "Unexpected Error",
+      "description": "A list of errors",
+      "schema": {
+        "$ref": "#/definitions/Errors"
+      }
+    },
+    "UnauthorizedResponse": {
+      "description": "Unauthorized",
+      "schema": {
+        "$ref": "#/definitions/Error"
+      },
+      "examples": {
+        "application/json": {
+          "error": "You need to sign in or sign up before continuing."
+        }
+      }
+    },
+    "BadRequestResponse": {
+      "description": "Bad Request",
+      "schema": {
+        "$ref": "#/definitions/Errors"
+      }
+    },
+    "NotFoundResponse": {
+      "description": "Not Found",
+      "schema": {
+        "$ref": "#/definitions/Errors"
+      }
+    },
+    "DeletedOK": {
+      "description": "OK",
+      "schema": {
+        "$ref": "#/definitions/Deleted"
+      }
+    },
+    "Unexpected": {
+      "description": "Any Other Error",
       "schema": {
         "$ref": "#/definitions/Errors"
       }
