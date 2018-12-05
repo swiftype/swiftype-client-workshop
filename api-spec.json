@@ -9,6 +9,10 @@
   "basePath": "/api/as/v1",
   "tags": [
     {
+      "name": "Documents API",
+      "description": "Document management"
+    },
+    {
       "name": "Synonyms API",
       "description": "Synonym management"
     },
@@ -124,15 +128,15 @@
       }
     },
     "/engines/{engine_name}": {
+      "parameters": [
+        {
+          "$ref": "#/parameters/engineNameParam"
+        }
+      ],
       "get": {
         "tags": ["Engines API"],
         "summary": "Get an Engine",
         "operationId": "getEngine",
-        "parameters": [
-          {
-            "$ref": "#/parameters/engineNameParam"
-          }
-        ],
         "responses": {
           "401": {
             "$ref": "#/responses/UnauthorizedResponse"
@@ -152,9 +156,50 @@
         "tags": ["Engines API"],
         "summary": "Destroy an single Engine",
         "operationId": "destroyEngine",
+        "responses": {
+          "401": {
+            "$ref": "#/responses/UnauthorizedResponse"
+          },
+          "200": {
+            "description": "OK"
+          },
+          "default": {
+            "$ref": "#/responses/Unexpected"
+          }
+        }
+      }
+    },
+    "/engines/{engine_name}/documents": {
+      "parameters": [
+        {
+          "$ref": "#/parameters/engineNameParam"
+        }
+      ],
+      "post": {
+        "tags": ["Documents API"],
+        "summary": "Create or Update one or more Documents",
+        "operationId": "indexDocuments",
         "parameters": [
           {
-            "$ref": "#/parameters/engineNameParam"
+            "in": "body",
+            "name": "documents",
+            "description": "List of documents to create or update. If ids are not provided, one will be auto-generated.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Document"
+              },
+              "example": [
+                {
+                  "id": "explicit-id",
+                  "some": "field"
+                },
+                {
+                  "some_field": "field",
+                  "another": 2
+                }
+              ]
+            }
           }
         ],
         "responses": {
@@ -162,7 +207,243 @@
             "$ref": "#/responses/UnauthorizedResponse"
           },
           "200": {
-            "description": "OK"
+            "description": "OK",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/OperationResult"
+              },
+              "example": [
+                {
+                  "id": "explicit-id",
+                  "errors": []
+                },
+                {
+                  "id": null,
+                  "errors": [
+                    "Fields can only contain lowercase letters, numbers, and underscores: someField."
+                  ]
+                }
+              ]
+            }
+          },
+          "default": {
+            "$ref": "#/responses/Unexpected"
+          }
+        }
+      },
+      "patch": {
+        "tags": ["Documents API"],
+        "summary": "Partially Update one or more Documents",
+        "operationId": "updateDocuments",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "documents",
+            "description": "List of existing documents with only fields to update. Fields excluded will be left in tact.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Document"
+              },
+              "example": [
+                {
+                  "id": "doc-313321314cc8a05b8d053134",
+                  "field_to_update": "value"
+                },
+                {
+                  "id": "doc-5b0d9db314cc8a05b8d05cfb",
+                  "field_to_update": "anotherValue"
+                }
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "401": {
+            "$ref": "#/responses/UnauthorizedResponse"
+          },
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/DeleteOperationResult"
+              },
+              "example": [
+                {
+                  "id": "doc-313321314cc8a05b8d053134",
+                  "errors": []
+                },
+                {
+                  "id": "",
+                  "errors": ["Missing required key 'id'"]
+                },
+                {
+                  "id": "doc-5b0d9db314cc8a05b8d05cfb",
+                  "errors": []
+                }
+              ]
+            }
+          },
+          "default": {
+            "$ref": "#/responses/Unexpected"
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Documents API"],
+        "summary": "Destroy one or more Documents",
+        "operationId": "destroyDocuments",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "document_ids",
+            "description": "List of ids for Documents to Destroy.",
+            "schema": {
+              "type": "array",
+              "items": { "$ref": "#/definitions/ID" },
+              "example": [
+                "doc-5b0d9db314cc8a05b8d05cfb",
+                "doc-313321314cc8a05b8d053134"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "401": {
+            "$ref": "#/responses/UnauthorizedResponse"
+          },
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/DeleteOperationResult"
+              },
+              "example": [
+                {
+                  "id": "doc-313321314cc8a05b8d053134",
+                  "deleted": true
+                },
+                {
+                  "id": "does_not_exist",
+                  "deleted": false
+                }
+              ]
+            }
+          },
+          "default": {
+            "$ref": "#/responses/Unexpected"
+          }
+        }
+      },
+      "get": {
+        "tags": ["Documents API"],
+        "summary": "Get one or more Documents",
+        "description": "Returns array of Documents, or null if the corresponding Document was not found",
+        "operationId": "getDocuments",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "ids[]",
+            "description": "List of ids for Documents to Get.",
+            "collectionFormat": "multi",
+            "type": "array",
+            "items": { "type": "string" },
+            "x-example": "ids[]=id1&ids[]=id2"
+          }
+        ],
+        "responses": {
+          "401": {
+            "$ref": "#/responses/UnauthorizedResponse"
+          },
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Document"
+              },
+              "example": [
+                {
+                  "id": "doc-12341341234124124",
+                  "some": "field"
+                },
+                null
+              ]
+            }
+          },
+          "default": {
+            "$ref": "#/responses/Unexpected"
+          }
+        }
+      }
+    },
+    "/engines/{engine_name}/documents/list": {
+      "parameters": [
+        {
+          "$ref": "#/parameters/engineNameParam"
+        }
+      ],
+      "get": {
+        "tags": ["Documents API"],
+        "summary": "List all Documents",
+        "operationId": "listDocuments",
+        "parameters": [
+          {
+            "$ref": "#/parameters/pageSizeParam"
+          },
+          {
+            "$ref": "#/parameters/pageCurrent"
+          }
+        ],
+        "responses": {
+          "401": {
+            "$ref": "#/responses/UnauthorizedResponse"
+          },
+          "200": {
+            "description": "OK",
+            "schema": {
+              "properties": {
+                "meta": {
+                  "$ref": "#/definitions/Meta"
+                },
+                "results": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/Document"
+                  }
+                }
+              },
+              "example": {
+                "meta": {
+                  "page": {
+                    "current": 1,
+                    "total_pages": 1,
+                    "total_results": 2,
+                    "size": 100
+                  }
+                },
+                "results": [
+                  {
+                    "make": "Toyota",
+                    "model": "Camry",
+                    "year": "2017",
+                    "tags": ["child safe", "power steering"],
+                    "id": "doc-5b0d9db314cc8a05b8d05cfb"
+                  },
+                  {
+                    "make": "Toyota",
+                    "model": "Camry",
+                    "year": "2017",
+                    "description": "",
+                    "tags": ["child safe", "power steering"],
+                    "id": "doc-5b0dc20dd3b68748b831017f"
+                  }
+                ]
+              }
+            }
           },
           "default": {
             "$ref": "#/responses/Unexpected"
@@ -240,7 +521,8 @@
         "parameters": [
           {
             "in": "body",
-            "name": "body",
+            "name": "synonym_set",
+            "description": "A Synonym Set to create",
             "required": true,
             "schema": {
               "$ref": "#/definitions/SynonymSet"
@@ -264,6 +546,11 @@
       }
     },
     "/engines/{engine_name}/synonyms/{id}": {
+      "parameters": [
+        {
+          "$ref": "#/parameters/engineNameParam"
+        }
+      ],
       "get": {
         "tags": ["Synonyms API"],
         "summary": "Get a single Synonym Set",
@@ -272,13 +559,10 @@
           {
             "name": "id",
             "in": "path",
-            "description": "Id of synonym set",
+            "description": "Id of Synonym Set",
             "required": true,
             "type": "string",
             "x-example": "syn-5b31513b14cc8a6f243e1f5c"
-          },
-          {
-            "$ref": "#/parameters/engineNameParam"
           }
         ],
         "responses": {
@@ -308,9 +592,6 @@
             "required": true,
             "type": "string",
             "x-example": "syn-5b31513b14cc8a6f243e1f5c"
-          },
-          {
-            "$ref": "#/parameters/engineNameParam"
           }
         ],
         "responses": {
@@ -328,6 +609,10 @@
     }
   },
   "definitions": {
+    "ID": {
+      "type": "string",
+      "example": "doc-5b0dc20dd3b68748b831017f"
+    },
     "Page": {
       "properties": {
         "current": {
@@ -392,34 +677,23 @@
             "type": "string"
           }
         }
-      },
-      "example": {
-        "synonyms": ["cool car", "PT Cruiser"],
-        "id": "syn-5b31513b14cc8a6f243e1f5c"
       }
     },
-    "Deleted": {
+    "Document": {
       "properties": {
-        "deleted": {
-          "type": "boolean"
+        "id": {
+          "type": "string",
+          "example": "doc-5b0dc20dd3b68748b831017f"
         }
       },
-      "example": {
-        "deleted": true
-      }
+      "additionalProperties": true
     },
-    "Error": {
+    "OperationResult": {
+      "required": ["errors"],
       "properties": {
-        "error": {
+        "id": {
           "type": "string"
-        }
-      },
-      "example": {
-        "error": "There was an error"
-      }
-    },
-    "Errors": {
-      "properties": {
+        },
         "errors": {
           "type": "array",
           "items": {
@@ -428,26 +702,70 @@
         }
       },
       "example": {
-        "errors": ["There were errors", "and more errors"]
+        "id": "doc-5b0dc20dd3b68748b831017f",
+        "errors": ["An error occurred"]
+      }
+    },
+    "DeleteOperationResult": {
+      "required": ["id", "deleted"],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "deleted": {
+          "type": "boolean"
+        }
+      },
+      "example": {
+        "id": "doc-5b0dc20dd3b68748b831017f",
+        "deleted": true
+      }
+    },
+    "Deleted": {
+      "required": ["deleted"],
+      "properties": {
+        "deleted": {
+          "type": "boolean",
+          "example": true
+        }
+      }
+    },
+    "Error": {
+      "required": ["error"],
+      "properties": {
+        "error": {
+          "type": "string",
+          "example": "There was an error"
+        }
+      }
+    },
+    "Errors": {
+      "required": ["errors"],
+      "properties": {
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "example": ["There were errors", "and more errors"]
+        }
       }
     },
     "Engine": {
       "required": ["name"],
       "properties": {
         "name": {
-          "type": "string"
+          "type": "string",
+          "example": "test-engine"
         },
         "type": {
-          "type": "string"
+          "type": "string",
+          "example": "default"
         },
         "language": {
-          "type": "string"
+          "type": "string",
+          "example": "en"
         }
-      },
-      "example": {
-        "name": "test-engine",
-        "type": "default",
-        "language": null
       }
     }
   },
@@ -455,25 +773,25 @@
     "pageCurrent": {
       "name": "page[current]",
       "in": "query",
+      "description": "The current page",
       "type": "integer",
       "format": "int32",
-      "required": false,
-      "x-example": "1",
+      "x-example": "page[current]=1",
       "default": "1"
     },
     "pageSizeParam": {
       "name": "page[size]",
       "in": "query",
+      "description": "The number of results to show on each page",
       "type": "integer",
       "format": "int32",
-      "required": false,
-      "x-example": "20",
+      "x-example": "page[size]=20",
       "default": "20"
     },
     "engineNameParam": {
       "name": "engine_name",
       "in": "path",
-      "description": "Name of engine",
+      "description": "Name of Engine",
       "required": true,
       "type": "string",
       "x-example": "rent-a-car"
