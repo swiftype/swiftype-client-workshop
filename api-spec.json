@@ -194,6 +194,88 @@
               "properties": {
                 "query": {
                   "type": "string"
+                },
+                "filters": {
+                  "type": "object",
+                  "properties": {
+                    "any": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": {
+                          "type": "object"
+                        }
+                      }
+                    },
+                    "all": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": {
+                          "type": "object"
+                        }
+                      }
+                    },
+                    "none": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": {
+                          "type": "object"
+                        }
+                      }
+                    }
+                  }
+                },
+                "facets": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "required": ["type"],
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": ["value", "range"]
+                        },
+                        "center": { "type": "string" },
+                        "unit": { "type": "string" },
+                        "size": {
+                          "type": "number",
+                          "format": "int32"
+                        },
+                        "sort": {
+                          "type": "object",
+                          "properties": {
+                            "value": {
+                              "type": "string",
+                              "enum": ["asc", "desc"]
+                            },
+                            "count": {
+                              "type": "string",
+                              "enum": ["asc", "desc"]
+                            }
+                          }
+                        },
+                        "ranges": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "from": {
+                                "description": "String if date, number if number of geo"
+                              },
+                              "to": {
+                                "description": "String if date, number if number of geo"
+                              },
+                              "name": { "type": "string" }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
                 }
               }
             }
@@ -802,8 +884,12 @@
     "SearchResultField": {
       "type": "object",
       "properties": {
-        "raw": {},
-        "snippet": {}
+        "raw": {
+          "description": "Either a String or an array of string"
+        },
+        "snippet": {
+          "description": "Either a String or an array of string"
+        }
       }
     },
     "OperationResult": {
