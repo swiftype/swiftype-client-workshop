@@ -19,6 +19,10 @@
     {
       "name": "Engines API",
       "description": "Engine management"
+    },
+    {
+      "name": "Search API",
+      "description": "Search"
     }
   ],
   "schemes": ["https"],
@@ -57,6 +61,7 @@
           "200": {
             "description": "OK",
             "schema": {
+              "type": "object",
               "properties": {
                 "meta": {
                   "$ref": "#/definitions/Meta"
@@ -162,6 +167,89 @@
           },
           "200": {
             "description": "OK"
+          },
+          "default": {
+            "$ref": "#/responses/Unexpected"
+          }
+        }
+      }
+    },
+    "/engines/{engine_name}/search": {
+      "parameters": [
+        {
+          "$ref": "#/parameters/engineNameParam"
+        }
+      ],
+      "post": {
+        "tags": ["Search API"],
+        "summary": "Search index for matching Documents",
+        "operationId": "search",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "search_query",
+            "description": "Search query",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "query": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "401": {
+            "$ref": "#/responses/UnauthorizedResponse"
+          },
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "meta": {
+                  "$ref": "#/definitions/Meta"
+                },
+                "results": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/SearchResult"
+                  }
+                }
+              },
+              "example": {
+                "meta": {
+                  "warnings": [],
+                  "page": {
+                    "current": 1,
+                    "total_pages": 1,
+                    "total_results": 2,
+                    "size": 10
+                  },
+                  "request_id": "4c9f3977673ff3c64eb717d860c59eb7"
+                },
+                "results": [
+                  {
+                    "year": {
+                      "raw": "2017"
+                    },
+                    "tags": {
+                      "raw": ["child safe", "power steering"]
+                    },
+                    "description": {
+                      "raw": ""
+                    },
+                    "id": {
+                      "raw": "doc-5b0dc20dd3b68748b831017f"
+                    },
+                    "_meta": {
+                      "score": 0.0044733174
+                    }
+                  }
+                ]
+              }
+            }
           },
           "default": {
             "$ref": "#/responses/Unexpected"
@@ -405,6 +493,7 @@
           "200": {
             "description": "OK",
             "schema": {
+              "type": "object",
               "properties": {
                 "meta": {
                   "$ref": "#/definitions/Meta"
@@ -476,6 +565,7 @@
           "200": {
             "description": "OK",
             "schema": {
+              "type": "object",
               "properties": {
                 "meta": {
                   "$ref": "#/definitions/Meta"
@@ -614,6 +704,7 @@
       "example": "doc-5b0dc20dd3b68748b831017f"
     },
     "Page": {
+      "type": "object",
       "properties": {
         "current": {
           "type": "integer",
@@ -648,6 +739,7 @@
       }
     },
     "Meta": {
+      "type": "object",
       "properties": {
         "page": {
           "$ref": "#/definitions/Page"
@@ -663,6 +755,7 @@
       }
     },
     "SynonymSet": {
+      "type": "object",
       "required": ["synonyms"],
       "properties": {
         "id": {
@@ -680,6 +773,7 @@
       }
     },
     "Document": {
+      "type": "object",
       "properties": {
         "id": {
           "type": "string",
@@ -688,7 +782,32 @@
       },
       "additionalProperties": true
     },
+    "SearchResult": {
+      "type": "object",
+      "properties": {
+        "_meta": {
+          "type": "object",
+          "properties": {
+            "score": {
+              "type": "number",
+              "format": "float"
+            }
+          }
+        },
+        "additionalProperties": {
+          "$ref": "#/definitions/SearchResultField"
+        }
+      }
+    },
+    "SearchResultField": {
+      "type": "object",
+      "properties": {
+        "raw": {},
+        "snippet": {}
+      }
+    },
     "OperationResult": {
+      "type": "object",
       "required": ["errors"],
       "properties": {
         "id": {
@@ -707,6 +826,7 @@
       }
     },
     "DeleteOperationResult": {
+      "type": "object",
       "required": ["id", "deleted"],
       "properties": {
         "id": {
@@ -722,6 +842,7 @@
       }
     },
     "Deleted": {
+      "type": "object",
       "required": ["deleted"],
       "properties": {
         "deleted": {
@@ -731,6 +852,7 @@
       }
     },
     "Error": {
+      "type": "object",
       "required": ["error"],
       "properties": {
         "error": {
@@ -752,6 +874,7 @@
       }
     },
     "Engine": {
+      "type": "object",
       "required": ["name"],
       "properties": {
         "name": {
